@@ -123,6 +123,50 @@ int main(void)
 
 	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11); //LED //Actual Pin Label: LED_Pin
 
+	if (RxData[1] & 0x01)
+	{
+		HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin, GPIO_PIN_SET); //Brake Light
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin, GPIO_PIN_RESET);
+	}
+
+	if (RxData[1] & 0x02)
+	{
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET); //Radiator fans
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+	}
+
+	if (RxData[1] & 0x04)
+	{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //FAN BATTBOX LEFT
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+	}
+
+	if (RxData[1] & 0x08)
+	{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET); //FAN BATTBOX RIGHT
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+	}
+
+	if (RxData[1] & 0x016)
+	{
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET); //PUMP
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+	}
 
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); //Brake Light
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //Radiator fans
@@ -404,7 +448,7 @@ static void FDCAN_Config(void)
   sFilterConfig.FilterIndex = 0;
   sFilterConfig.FilterType = FDCAN_FILTER_MASK;
   sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  sFilterConfig.FilterID1 = 0x400; //filter: 0b10000000000 standard 11-bit ID
+  sFilterConfig.FilterID1 = 0x666; //filter: 0b10000000000 standard 11-bit ID
   sFilterConfig.FilterID2 = 0x7FF; //0x7FF; //Filter Mask: 0b11111111111 to check all 11 bits of incoming message against filter
   //Check this out: https://schulz-m.github.io/2017/03/23/stm32-can-id-filter/
   //Also: https://community.st.com/s/question/0D53W00000YwmXTSAZ/fdcan-callback-function-is-not-called
