@@ -46,6 +46,7 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 FDCAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
+int duty_cycle = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,11 +117,11 @@ int main(void)
 
 	if(RxData[0] == 1)
 	{
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_SET);
 	}
 	else
 	{
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_RESET);
 	}
 
 	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11); //LED //Actual Pin Label: LED_Pin
@@ -135,14 +136,19 @@ int main(void)
 	}
 
 	if (RxData[1] & 0x02)
-	{
+		{
+		if (RxData[2] > 0x00)
+			{
+				int duty_cycle_const = RxData[2];
+				int duty_cycle = (duty_cycle_const*256)-1;
+			}
 		HAL_GPIO_WritePin(GPIOA,RAD_FAN_CTRL_Pin, GPIO_PIN_SET);
-	}
+		//uint8_t duty_cycle_rad_fan = RxData[1];
+		}
 	else
 	{
 		HAL_GPIO_WritePin(GPIOA, RAD_FAN_CTRL_Pin, GPIO_PIN_RESET);
 	}
-
 	if (RxData[1] & 0x04)
 	{
 		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin, GPIO_PIN_SET); //FAN BATTBOX LEFT
@@ -161,20 +167,11 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin, GPIO_PIN_RESET);
 	}
 
-	if (RxData[1] & 0x016)
-	{
-		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_SET);
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_RESET);
-	}
-
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); //Brake Light
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //Radiator fans
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); //FAN BATTBOX LEFT
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15); //FAN BATTBOX RIGHT
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); //PUMP
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); //Brake Light
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //Radiator fans
+	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); //FAN BATTBOX LEFT
+	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15); //FAN BATTBOX RIGHT
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); //PUMP
 	/* Insert delay*/
 	//HAL_Delay(1000);
 
@@ -353,7 +350,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = duty_cycle;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
