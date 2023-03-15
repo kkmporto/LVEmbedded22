@@ -8,6 +8,8 @@
 		<item key="caseSensitive" value="false"/>
 		<item key="searchFlags" value="227191"/>
 		<list key="previousPatterns">
+			<item value="LED"/>
+			<item value="RxData"/>
 			<item value="RAD"/>
 		</list>
 	</section>
