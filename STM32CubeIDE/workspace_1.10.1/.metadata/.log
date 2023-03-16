@@ -1118,3 +1118,22 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64
 
 !ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-02-26 18:26:45.369
 !MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2023-03-15 00:20:35.405 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  C:\Users\wstad\OneDrive\Desktop\GITHUB\LVEmbedded22\STM32CubeIDE\workspace_1.10.1\PDU_17D\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\wstad\OneDrive\Desktop\GITHUB\LVEmbedded22\STM32CubeIDE\workspace_1.10.1\PDU_17D\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-03-15 00:22:05.267
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-03-15 00:22:05.346
+!MESSAGE Log4j initialized with config file C:\Users\wstad\OneDrive\Desktop\GITHUB\LVEmbedded22\STM32CubeIDE\workspace_1.10.1\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-03-15 00:22:13.102
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2023-03-15 00:22:19.158
+!MESSAGE Indexed 'PDU_17D' (22 sources, 152 headers) in 5.39 sec: 15,358 declarations; 69,924 references; 3 unresolved inclusions; 46 syntax errors; 768 unresolved names (0.89%)
