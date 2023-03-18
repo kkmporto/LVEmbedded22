@@ -113,8 +113,6 @@ int main(void)
 
 	  	  if (CAN_fan_dutycycle < 6555){
 	  		  TIM3->CCR2 = 0;
-
-
 	  	  } else {
 	  		  TIM3->CCR2 = CAN_fan_dutycycle;
 	  	  }

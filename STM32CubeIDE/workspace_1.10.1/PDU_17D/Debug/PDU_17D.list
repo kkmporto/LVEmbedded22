@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0001d33d  00000000  00000000  00031dc0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000e367  00000000  00000000  0004f0fd  2**0
+ 17 .debug_line   0000e364  00000000  00000000  0004f0fd  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000c1174  00000000  00000000  0005d464  2**0
+ 18 .debug_str    000c1174  00000000  00000000  0005d461  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  0011e5d8  2**0
+ 19 .comment      00000050  00000000  00000000  0011e5d5  2**0
                   CONTENTS, READONLY
  20 .debug_frame  00003e70  00000000  00000000  0011e628  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -130,16 +130,16 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (pineapple)
- 8000244:	e080      	b.n	8000348 <main+0x130>
+ 8000244:	e07f      	b.n	8000346 <main+0x12e>
   {
 	  //PWM code starts
-	  	  uint16_t CAN_fan_dutycycle = (RxData[1]);
+	  	  uint16_t CAN_fan_dutycycle = (RxData[2]);
  8000246:	4b46      	ldr	r3, [pc, #280]	; (8000360 <main+0x148>)
- 8000248:	785b      	ldrb	r3, [r3, #1]
+ 8000248:	789b      	ldrb	r3, [r3, #2]
  800024a:	80fb      	strh	r3, [r7, #6]
-	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256)+255;
+	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256*16)+255;
  800024c:	88fb      	ldrh	r3, [r7, #6]
- 800024e:	021b      	lsls	r3, r3, #8
+ 800024e:	031b      	lsls	r3, r3, #12
  8000250:	b29b      	uxth	r3, r3
  8000252:	33ff      	adds	r3, #255	; 0xff
  8000254:	80fb      	strh	r3, [r7, #6]
@@ -196,7 +196,7 @@ int main(void)
  80002a4:	105b      	asrs	r3, r3, #1
  80002a6:	2b00      	cmp	r3, #0
  80002a8:	d006      	beq.n	80002b8 <main+0xa0>
-	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brklight = PA1
+	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brkligh  t = PA1
  80002aa:	2201      	movs	r2, #1
  80002ac:	2102      	movs	r1, #2
  80002ae:	f04f 4090 	mov.w	r0, #1207959552	; 0x48000000
@@ -211,94 +211,95 @@ int main(void)
 	  	  }
 
 
-	  	  if ((pineapple<<2 & RxData[0])>>2){
- 80002c4:	4b28      	ldr	r3, [pc, #160]	; (8000368 <main+0x150>)
- 80002c6:	781b      	ldrb	r3, [r3, #0]
- 80002c8:	009b      	lsls	r3, r3, #2
- 80002ca:	4a25      	ldr	r2, [pc, #148]	; (8000360 <main+0x148>)
- 80002cc:	7812      	ldrb	r2, [r2, #0]
- 80002ce:	4013      	ands	r3, r2
- 80002d0:	109b      	asrs	r3, r3, #2
- 80002d2:	2b00      	cmp	r3, #0
- 80002d4:	d006      	beq.n	80002e4 <main+0xcc>
+//	  	  if ((pineapple<<2 & RxData[0])>>2){
+	  	  if ((RxData[0]!=0)  | (RxData[1]!=0)){
+ 80002c4:	4b26      	ldr	r3, [pc, #152]	; (8000360 <main+0x148>)
+ 80002c6:	781a      	ldrb	r2, [r3, #0]
+ 80002c8:	4b25      	ldr	r3, [pc, #148]	; (8000360 <main+0x148>)
+ 80002ca:	785b      	ldrb	r3, [r3, #1]
+ 80002cc:	4313      	orrs	r3, r2
+ 80002ce:	b2db      	uxtb	r3, r3
+ 80002d0:	2b00      	cmp	r3, #0
+ 80002d2:	d006      	beq.n	80002e2 <main+0xca>
 	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_SET); //LED = PB11
- 80002d6:	2201      	movs	r2, #1
- 80002d8:	f44f 6100 	mov.w	r1, #2048	; 0x800
- 80002dc:	4823      	ldr	r0, [pc, #140]	; (800036c <main+0x154>)
- 80002de:	f001 fc1f 	bl	8001b20 <HAL_GPIO_WritePin>
- 80002e2:	e005      	b.n	80002f0 <main+0xd8>
+ 80002d4:	2201      	movs	r2, #1
+ 80002d6:	f44f 6100 	mov.w	r1, #2048	; 0x800
+ 80002da:	4824      	ldr	r0, [pc, #144]	; (800036c <main+0x154>)
+ 80002dc:	f001 fc20 	bl	8001b20 <HAL_GPIO_WritePin>
+ 80002e0:	e005      	b.n	80002ee <main+0xd6>
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_RESET);
- 80002e4:	2200      	movs	r2, #0
- 80002e6:	f44f 6100 	mov.w	r1, #2048	; 0x800
- 80002ea:	4820      	ldr	r0, [pc, #128]	; (800036c <main+0x154>)
- 80002ec:	f001 fc18 	bl	8001b20 <HAL_GPIO_WritePin>
+ 80002e2:	2200      	movs	r2, #0
+ 80002e4:	f44f 6100 	mov.w	r1, #2048	; 0x800
+ 80002e8:	4820      	ldr	r0, [pc, #128]	; (800036c <main+0x154>)
+ 80002ea:	f001 fc19 	bl	8001b20 <HAL_GPIO_WritePin>
 	  	  }
 
 
 	  	  if ((pineapple<<3 & RxData[0])>>3){
- 80002f0:	4b1d      	ldr	r3, [pc, #116]	; (8000368 <main+0x150>)
- 80002f2:	781b      	ldrb	r3, [r3, #0]
- 80002f4:	00db      	lsls	r3, r3, #3
- 80002f6:	4a1a      	ldr	r2, [pc, #104]	; (8000360 <main+0x148>)
- 80002f8:	7812      	ldrb	r2, [r2, #0]
- 80002fa:	4013      	ands	r3, r2
- 80002fc:	10db      	asrs	r3, r3, #3
- 80002fe:	2b00      	cmp	r3, #0
- 8000300:	d006      	beq.n	8000310 <main+0xf8>
+ 80002ee:	4b1e      	ldr	r3, [pc, #120]	; (8000368 <main+0x150>)
+ 80002f0:	781b      	ldrb	r3, [r3, #0]
+ 80002f2:	00db      	lsls	r3, r3, #3
+ 80002f4:	4a1a      	ldr	r2, [pc, #104]	; (8000360 <main+0x148>)
+ 80002f6:	7812      	ldrb	r2, [r2, #0]
+ 80002f8:	4013      	ands	r3, r2
+ 80002fa:	10db      	asrs	r3, r3, #3
+ 80002fc:	2b00      	cmp	r3, #0
+ 80002fe:	d006      	beq.n	800030e <main+0xf6>
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_SET); //Fan bb left = PB14
- 8000302:	2201      	movs	r2, #1
- 8000304:	f44f 4180 	mov.w	r1, #16384	; 0x4000
- 8000308:	4818      	ldr	r0, [pc, #96]	; (800036c <main+0x154>)
- 800030a:	f001 fc09 	bl	8001b20 <HAL_GPIO_WritePin>
- 800030e:	e005      	b.n	800031c <main+0x104>
+ 8000300:	2201      	movs	r2, #1
+ 8000302:	f44f 4180 	mov.w	r1, #16384	; 0x4000
+ 8000306:	4819      	ldr	r0, [pc, #100]	; (800036c <main+0x154>)
+ 8000308:	f001 fc0a 	bl	8001b20 <HAL_GPIO_WritePin>
+ 800030c:	e005      	b.n	800031a <main+0x102>
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
- 8000310:	2200      	movs	r2, #0
- 8000312:	f44f 4180 	mov.w	r1, #16384	; 0x4000
- 8000316:	4815      	ldr	r0, [pc, #84]	; (800036c <main+0x154>)
- 8000318:	f001 fc02 	bl	8001b20 <HAL_GPIO_WritePin>
+ 800030e:	2200      	movs	r2, #0
+ 8000310:	f44f 4180 	mov.w	r1, #16384	; 0x4000
+ 8000314:	4815      	ldr	r0, [pc, #84]	; (800036c <main+0x154>)
+ 8000316:	f001 fc03 	bl	8001b20 <HAL_GPIO_WritePin>
 	  	  }
 
 
 	  	  if ((pineapple<<4 & RxData[0])>>4){
- 800031c:	4b12      	ldr	r3, [pc, #72]	; (8000368 <main+0x150>)
- 800031e:	781b      	ldrb	r3, [r3, #0]
- 8000320:	011b      	lsls	r3, r3, #4
- 8000322:	4a0f      	ldr	r2, [pc, #60]	; (8000360 <main+0x148>)
- 8000324:	7812      	ldrb	r2, [r2, #0]
- 8000326:	4013      	ands	r3, r2
- 8000328:	111b      	asrs	r3, r3, #4
- 800032a:	2b00      	cmp	r3, #0
- 800032c:	d006      	beq.n	800033c <main+0x124>
+ 800031a:	4b13      	ldr	r3, [pc, #76]	; (8000368 <main+0x150>)
+ 800031c:	781b      	ldrb	r3, [r3, #0]
+ 800031e:	011b      	lsls	r3, r3, #4
+ 8000320:	4a0f      	ldr	r2, [pc, #60]	; (8000360 <main+0x148>)
+ 8000322:	7812      	ldrb	r2, [r2, #0]
+ 8000324:	4013      	ands	r3, r2
+ 8000326:	111b      	asrs	r3, r3, #4
+ 8000328:	2b00      	cmp	r3, #0
+ 800032a:	d006      	beq.n	800033a <main+0x122>
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin , GPIO_PIN_SET); //Fan bb right = PB15
- 800032e:	2201      	movs	r2, #1
- 8000330:	f44f 4100 	mov.w	r1, #32768	; 0x8000
- 8000334:	480d      	ldr	r0, [pc, #52]	; (800036c <main+0x154>)
- 8000336:	f001 fbf3 	bl	8001b20 <HAL_GPIO_WritePin>
- 800033a:	e005      	b.n	8000348 <main+0x130>
+ 800032c:	2201      	movs	r2, #1
+ 800032e:	f44f 4100 	mov.w	r1, #32768	; 0x8000
+ 8000332:	480e      	ldr	r0, [pc, #56]	; (800036c <main+0x154>)
+ 8000334:	f001 fbf4 	bl	8001b20 <HAL_GPIO_WritePin>
+ 8000338:	e005      	b.n	8000346 <main+0x12e>
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
- 800033c:	2200      	movs	r2, #0
- 800033e:	f44f 4180 	mov.w	r1, #16384	; 0x4000
- 8000342:	480a      	ldr	r0, [pc, #40]	; (800036c <main+0x154>)
- 8000344:	f001 fbec 	bl	8001b20 <HAL_GPIO_WritePin>
+ 800033a:	2200      	movs	r2, #0
+ 800033c:	f44f 4180 	mov.w	r1, #16384	; 0x4000
+ 8000340:	480a      	ldr	r0, [pc, #40]	; (800036c <main+0x154>)
+ 8000342:	f001 fbed 	bl	8001b20 <HAL_GPIO_WritePin>
   while (pineapple)
- 8000348:	4b07      	ldr	r3, [pc, #28]	; (8000368 <main+0x150>)
- 800034a:	781b      	ldrb	r3, [r3, #0]
- 800034c:	2b00      	cmp	r3, #0
- 800034e:	f47f af7a 	bne.w	8000246 <main+0x2e>
- 8000352:	2300      	movs	r3, #0
+ 8000346:	4b08      	ldr	r3, [pc, #32]	; (8000368 <main+0x150>)
+ 8000348:	781b      	ldrb	r3, [r3, #0]
+ 800034a:	2b00      	cmp	r3, #0
+ 800034c:	f47f af7b 	bne.w	8000246 <main+0x2e>
+ 8000350:	2300      	movs	r3, #0
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
- 8000354:	4618      	mov	r0, r3
- 8000356:	3708      	adds	r7, #8
- 8000358:	46bd      	mov	sp, r7
- 800035a:	bd80      	pop	{r7, pc}
+ 8000352:	4618      	mov	r0, r3
+ 8000354:	3708      	adds	r7, #8
+ 8000356:	46bd      	mov	sp, r7
+ 8000358:	bd80      	pop	{r7, pc}
+ 800035a:	bf00      	nop
  800035c:	20000090 	.word	0x20000090
  8000360:	20000104 	.word	0x20000104
  8000364:	40000400 	.word	0x40000400
@@ -357,8 +358,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
  80003b0:	2301      	movs	r3, #1
  80003b2:	63fb      	str	r3, [r7, #60]	; 0x3c
-  RCC_OscInitStruct.PLL.PLLN = 9;
- 80003b4:	2309      	movs	r3, #9
+  RCC_OscInitStruct.PLL.PLLN = 10;
+ 80003b4:	230a      	movs	r3, #10
  80003b6:	643b      	str	r3, [r7, #64]	; 0x40
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
  80003b8:	2302      	movs	r3, #2

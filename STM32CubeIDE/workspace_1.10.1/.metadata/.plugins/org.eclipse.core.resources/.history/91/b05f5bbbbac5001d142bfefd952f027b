@@ -108,13 +108,11 @@ int main(void)
   while (pineapple)
   {
 	  //PWM code starts
-	  	  uint16_t CAN_fan_dutycycle = (RxData[2]);
-	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256*16)+255;
+	  	  uint16_t CAN_fan_dutycycle = (RxData[3]);
+	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256)+255;
 
 	  	  if (CAN_fan_dutycycle < 6555){
 	  		  TIM3->CCR2 = 0;
-
-
 	  	  } else {
 	  		  TIM3->CCR2 = CAN_fan_dutycycle;
 	  	  }

@@ -108,13 +108,11 @@ int main(void)
   while (pineapple)
   {
 	  //PWM code starts
-	  	  uint16_t CAN_fan_dutycycle = (RxData[2]);
-	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256*16)+255;
+	  	  uint16_t CAN_fan_dutycycle = (RxData[1]);
+	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256)+255;
 
 	  	  if (CAN_fan_dutycycle < 6555){
 	  		  TIM3->CCR2 = 0;
-
-
 	  	  } else {
 	  		  TIM3->CCR2 = CAN_fan_dutycycle;
 	  	  }
@@ -128,14 +126,13 @@ int main(void)
 
 
 	  	  if ((pineapple<<1 & RxData[0])>>1){
-	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brkligh  t = PA1
+	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brklight = PA1
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_RESET);
 	  	  }
 
 
-//	  	  if ((pineapple<<2 & RxData[0])>>2){
-	  	  if ((RxData[0]!=0)  | (RxData[1]!=0)){
+	  	  if ((pineapple<<2 & RxData[0])>>2){
 	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_SET); //LED = PB11
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_RESET);
@@ -183,7 +180,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 10;
+  RCC_OscInitStruct.PLL.PLLN = 9;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV8;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
