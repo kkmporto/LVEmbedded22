@@ -41,13 +41,11 @@
 /* Private variables ---------------------------------------------------------*/
 FDCAN_HandleTypeDef hfdcan1;
 
-TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 FDCAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
-int32_t duty_cycle = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,13 +53,13 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_FDCAN1_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void FDCAN_Config(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t pineapple = 0x01;
 /* USER CODE END 0 */
 
 /**
@@ -92,128 +90,70 @@ int main(void)
   MX_GPIO_Init();
   MX_FDCAN1_Init();
   MX_TIM3_Init();
-  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   FDCAN_Config();
 
   //Starting timers
   HAL_TIM_Base_Start_IT(&htim3);
 
-  if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2) != HAL_OK)
-    {
-      /* PWM Generation Error */
-      Error_Handler();
-    }
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+
   //Starting DMA
   //HAL_ADC_Start_DMA(&hadc2, (uint32_t*)AdcResults, ADC_BUF_LEN);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  while (pineapple)
   {
+	  //PWM code starts
+	  	  uint16_t CAN_fan_dutycycle = (RxData[1]);
+	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256)+255;
+
+	  	  if (CAN_fan_dutycycle < 6555){
+	  		  TIM3->CCR2 = 0;
+	  	  } else {
+	  		  TIM3->CCR2 = CAN_fan_dutycycle;
+	  	  }
+	  	  //PWM code ends
+
+	  	  if (pineapple & RxData[0]){
+	  		  HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin , GPIO_PIN_SET); //Pump = PIN_A0
+	  	  } else {
+	  		  HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin , GPIO_PIN_RESET);
+	    	  }
+
+
+	  	  if ((pineapple<<1 & RxData[0])>>1){
+	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brklight = PA1
+	  	  } else {
+	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_RESET);
+	  	  }
+
+
+	  	  if ((pineapple<<2 & RxData[0])>>2){
+	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_SET); //LED = PB11
+	  	  } else {
+	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_RESET);
+	  	  }
+
+
+	  	  if ((pineapple<<3 & RxData[0])>>3){
+	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_SET); //Fan bb left = PB14
+	  	  } else {
+	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
+	  	  }
+
+
+	  	  if ((pineapple<<4 & RxData[0])>>4){
+	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin , GPIO_PIN_SET); //Fan bb right = PB15
+	  	  } else {
+	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
+	  	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-
-	if(RxData[0] == 1)
-	{
-		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_SET);
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin, GPIO_PIN_RESET);
-	}
-
-	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11); //LED //Actual Pin Label: LED_Pin
-
-	if (RxData[1] & 0x01)
-	{
-		HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin, GPIO_PIN_SET);
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin, GPIO_PIN_RESET);
-	}
-
-	if (RxData[1] & 0x02)
-		{
-		if (RxData[2] > 0x00)
-			{
-				int duty_cycle_const = RxData[2];
-				int duty_cycle = (duty_cycle_const*256)-1;
-				TIM3->CCR2 = duty_cycle; // CCR2 controls the duty cycle for channel 2
-			}
-		HAL_GPIO_WritePin(GPIOA,RAD_FAN_CTRL_Pin, GPIO_PIN_SET);
-		//uint8_t duty_cycle_rad_fan = RxData[1];
-		}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOA, RAD_FAN_CTRL_Pin, GPIO_PIN_RESET);
-	}
-	if (RxData[1] & 0x04)
-	{
-		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin, GPIO_PIN_SET); //FAN BATTBOX LEFT
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin, GPIO_PIN_RESET);
-	}
-
-	if (RxData[1] & 0x08)
-	{
-		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin, GPIO_PIN_SET); //FAN BATTBOX RIGHT
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin, GPIO_PIN_RESET);
-	}
-
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); //Brake Light
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //Radiator fans
-	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); //FAN BATTBOX LEFT
-	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15); //FAN BATTBOX RIGHT
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); //PUMP
-	/* Insert delay*/
-	//HAL_Delay(1000);
-
-	/*
-	analog1_word = AdcResults[0]; //Analog Input Data 1
-	analog2_word = AdcResults[1]; //Analog Input Data 2
-	analog1_half1 = (0b11111111 & analog1_word); //lower 8 bits
-	analog1_half2 = ((0b11111111<<8) & analog1_word)>>8; //upper 8 bits
-	analog2_half1 = (0b11111111 & analog2_word); //lower 8 bits
-	analog2_half2 = ((0b11111111<<8) & analog2_word)>>8; //upper 8 bits
-	*/
-	//Connectors from right to left mapped to bits 0 through 7. J6 (last connector on the left) is unused.
-	//| MSB:J10 | J12 | J7 | J9 | J11 | J13 | J5 | J8:LSB |
-	/*
-	digital_word = 0x00;
-	digital_word = digital_word |  HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13); 	//PB6, J8
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14)) <<1; 		//PB5, J5
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15)) <<2; 	//PB4, J13
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_1)) <<3; 	//PB3, J11
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)) <<4; 	//PB2, J9
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)) <<5; 	//PB1, J7
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7)) <<6; 	//PB9, J12
-	digital_word = digital_word | (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0)) <<7; 	//PB8, J10
-	*/
-	//Defining CAN message to be sent
-	/*
-	TxData[0] = analog2_half2;//analog2 upper 4 bits
-	TxData[1] = analog2_half1;//analog2 lower 8 bits
-	TxData[2] = analog1_half2;//analog1 upper 4 bits
-	TxData[3] = analog1_half1;//analog1 lower 8 bits
-	TxData[4] = digital_word; //Digital input Byte
-	TxData[5] = 0x00;
-	TxData[6] = 0x00;
-	TxData[7] = 0x00;
-	*/
-	//Toggling indicator output (debug)
-	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-	//HAL_Delay(8);
   }
   /* USER CODE END 3 */
 }
@@ -310,51 +250,6 @@ static void MX_FDCAN1_Init(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -430,7 +325,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin|BRKLIGHT_CTRL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11|FAN_BATTBOX_L_CTRL_Pin|FAN_BATTBOX_R_CTRL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LED_Pin|FAN_BATTBOX_L_CTRL_Pin|FAN_BATTBOX_R_CTRL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PUMP_CTRL_Pin BRKLIGHT_CTRL_Pin */
   GPIO_InitStruct.Pin = PUMP_CTRL_Pin|BRKLIGHT_CTRL_Pin;
@@ -439,8 +334,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB11 FAN_BATTBOX_L_CTRL_Pin FAN_BATTBOX_R_CTRL_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|FAN_BATTBOX_L_CTRL_Pin|FAN_BATTBOX_R_CTRL_Pin;
+  /*Configure GPIO pins : LED_Pin FAN_BATTBOX_L_CTRL_Pin FAN_BATTBOX_R_CTRL_Pin */
+  GPIO_InitStruct.Pin = LED_Pin|FAN_BATTBOX_L_CTRL_Pin|FAN_BATTBOX_R_CTRL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -464,7 +359,7 @@ static void FDCAN_Config(void)
   sFilterConfig.FilterIndex = 0;
   sFilterConfig.FilterType = FDCAN_FILTER_MASK;
   sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  sFilterConfig.FilterID1 = 0x666; //filter: 0b10000000000 standard 11-bit ID
+  sFilterConfig.FilterID1 = 0x400; //filter: 0b10000000000 standard 11-bit ID
   sFilterConfig.FilterID2 = 0x7FF; //0x7FF; //Filter Mask: 0b11111111111 to check all 11 bits of incoming message against filter
   //Check this out: https://schulz-m.github.io/2017/03/23/stm32-can-id-filter/
   //Also: https://community.st.com/s/question/0D53W00000YwmXTSAZ/fdcan-callback-function-is-not-called
@@ -492,18 +387,7 @@ static void FDCAN_Config(void)
     Error_Handler();
   }
 
-  /* Prepare Tx Header */
-  /*
-  TxHeader.Identifier = 0x401;
-  TxHeader.IdType = FDCAN_STANDARD_ID;
-  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-  TxHeader.DataLength = FDCAN_DLC_BYTES_2;
-  TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-  TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
-  TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
-  TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-  TxHeader.MessageMarker = 0;
-  */
+
 }
 
 /**
