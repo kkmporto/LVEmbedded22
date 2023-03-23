@@ -108,8 +108,8 @@ int main(void)
   while (pineapple)
   {
 	  //PWM code starts
-	  	  uint16_t CAN_fan_dutycycle = (RxData[2]);
-	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256*16)+255;
+	  	  uint16_t CAN_fan_dutycycle = (RxData[0]);
+	  	  CAN_fan_dutycycle = ((CAN_fan_dutycycle)*256)+255;
 
 	  	  if (CAN_fan_dutycycle < 6555){
 	  		  TIM3->CCR2 = 0;
@@ -120,21 +120,21 @@ int main(void)
 	  	  }
 	  	  //PWM code ends
 
-	  	  if (pineapple & RxData[0]){
+	  	  if (pineapple & RxData[1]){
 	  		  HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin , GPIO_PIN_SET); //Pump = PIN_A0
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOA, PUMP_CTRL_Pin , GPIO_PIN_RESET);
 	    	  }
 
 
-	  	  if ((pineapple<<1 & RxData[0])>>1){
+	  	  if ((pineapple<<1 & RxData[1])>>1){
 	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_SET); //Brkligh  t = PA1
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOA, BRKLIGHT_CTRL_Pin , GPIO_PIN_RESET);
 	  	  }
 
 
-//	  	  if ((pineapple<<2 & RxData[0])>>2){
+//	  	  if ((pineapple<<2 & RxData[1])>>2){
 	  	  if ((RxData[0]!=0)  | (RxData[1]!=0)){
 	  		  HAL_GPIO_WritePin(GPIOB, LED_Pin , GPIO_PIN_SET); //LED = PB11
 	  	  } else {
@@ -142,18 +142,16 @@ int main(void)
 	  	  }
 
 
-	  	  if ((pineapple<<3 & RxData[0])>>3){
+	  	  if ((pineapple<<3 & RxData[1])>>3){
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_SET); //Fan bb left = PB14
+			  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin , GPIO_PIN_SET); //Fan bb right = PB15
 	  	  } else {
 	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
+			  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin , GPIO_PIN_RESET);
 	  	  }
 
 
-	  	  if ((pineapple<<4 & RxData[0])>>4){
-	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_R_CTRL_Pin , GPIO_PIN_SET); //Fan bb right = PB15
-	  	  } else {
-	  		  HAL_GPIO_WritePin(GPIOB, FAN_BATTBOX_L_CTRL_Pin , GPIO_PIN_RESET);
-	  	  }
+	  	 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -362,7 +360,7 @@ static void FDCAN_Config(void)
   sFilterConfig.FilterIndex = 0;
   sFilterConfig.FilterType = FDCAN_FILTER_MASK;
   sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  sFilterConfig.FilterID1 = 0x400; //filter: 0b10000000000 standard 11-bit ID
+  sFilterConfig.FilterID1 = 0x666; //filter: 0b10000000000 standard 11-bit ID
   sFilterConfig.FilterID2 = 0x7FF; //0x7FF; //Filter Mask: 0b11111111111 to check all 11 bits of incoming message against filter
   //Check this out: https://schulz-m.github.io/2017/03/23/stm32-can-id-filter/
   //Also: https://community.st.com/s/question/0D53W00000YwmXTSAZ/fdcan-callback-function-is-not-called
